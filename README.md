@@ -1,12 +1,15 @@
 <u>**8822BU for Linux**</u>
 
 Compiles successfully on Kali-linux 4.17.0-kali1-amd64 (Debian-based) with Honeybull1200 usb adapter
+
 Compiles as 88x2.ko
+
 Successful hostapd 0n 5GHz channels 36 to 44
 
 Does not compile successfully on Centos 7
 
 Previous readme text below:
+
 Driver for 802.11ac USB Adapter with  
 RTL8822BU chipset  
 Only STA/Monitor Mode is supported, no AP.  
