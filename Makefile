@@ -71,6 +71,10 @@ CONFIG_MCC_MODE = n
 CONFIG_APPEND_VENDOR_IE_ENABLE = n
 CONFIG_RTW_NAPI = y
 CONFIG_RTW_GRO = y
+# credit: https://github.com/aircrack-ng/rtl8812au/blob/v5.1.5/Makefile
+# Choose y below to disable the code in os_dep/linux/ wifi_regd.c
+# most likely needed when using hostapd in 802.11ac mode
+CONFIG_DISABLE_REGD_C = y
 ########################## Debug ###########################
 CONFIG_RTW_DEBUG = n
 # default log level is _DRV_INFO_ = 4,
@@ -90,7 +94,9 @@ CONFIG_RTW_SDIO_PM_KEEP_POWER = y
 ###################### MP HW TX MODE FOR VHT #######################
 CONFIG_MP_VHT_HW_TX_MODE = n
 ###################### Platform Related #######################
-CONFIG_PLATFORM_I386_PC = y
+# target to be edited here
+CONFIG_PLATFORM_I386_PC = n
+CONFIG_PLATFORM_ARM_RK3288 = y
 CONFIG_PLATFORM_ARM_RPI = n
 CONFIG_PLATFORM_ANDROID_X86 = n
 CONFIG_PLATFORM_ANDROID_INTEL_X86 = n
@@ -152,6 +158,11 @@ CONFIG_DRVEXT_MODULE = n
 export TopDIR ?= $(shell pwd)
 
 ########### COMMON  #################################
+# credit: https://github.com/aircrack-ng/rtl8812au/blob/v5.1.5/Makefile
+ifeq ($(CONFIG_DISABLE_REGD_C), y)
+EXTRA_CFLAGS += -DCONFIG_DISABLE_REGD_C
+endif
+
 ifeq ($(CONFIG_GSPI_HCI), y)
 HCI_NAME = gspi
 endif
@@ -985,6 +996,35 @@ KVER ?= $(shell uname -r)
 KSRC := /lib/modules/$(KVER)/build
 MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
 INSTALL_PREFIX :=
+endif
+
+# experimental and unconfirmed development as at 5 Aug 2018
+ifeq ($(CONFIG_PLATFORM_ARM_RK3288), y)
+EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN 
+EXTRA_CFLAGS += -DCONFIG_PLATFORM_ROCKCHIPS
+EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 
+EXTRA_CFLAGS += -DRTW_USE_CFG80211_STA_EVENT
+#EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE
+# default setting for Power control
+EXTRA_CFLAGS += -DRTW_ENABLE_WIFI_CONTROL_FUNC
+EXTRA_CFLAGS += -DRTW_SUPPORT_PLATFORM_SHUTDOWN
+# default setting for Special function
+#ARCH := arm
+SUBARCH := $(shell uname -m)
+ARCH ?= $(SUBARCH)
+# the following note from https://github.com/torvalds/linux/blob/master/Makefile
+# CROSS_COMPILE specify the prefix used for all executables used
+# during compilation. Only gcc and related bin-utils executables
+# are prefixed with $(CROSS_COMPILE).
+# CROSS_COMPILE can be set on the command line
+# make CROSS_COMPILE=ia64-linux-
+# Alternatively CROSS_COMPILE can be set in the environment.
+# Default value for CROSS_COMPILE is not to prefix executables
+CROSS_COMPILE ?= 
+KVER ?= $(shell uname -r)
+KSRC := /lib/modules/$(KVER)/build
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+MODULE_NAME := wlan
 endif
 
 ifeq ($(CONFIG_PLATFORM_NV_TK1), y)
